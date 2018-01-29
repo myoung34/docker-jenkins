@@ -20,10 +20,8 @@ timestamps {
       }
     } catch (err) {
       currentBuild.result = 'FAILURE'
-      notifier.notifyError(err)
       throw err
     } finally {
-      notifier.notifyResult()
       node('master') {
         logstashSend failBuild: true, maxLines: 1000
       }
