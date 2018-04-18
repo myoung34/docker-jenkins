@@ -6,10 +6,29 @@ import jenkins.model.*
 import com.cloudbees.jenkins.plugins.amazonecs.ECSTaskTemplate
 import com.cloudbees.jenkins.plugins.amazonecs.ECSTaskTemplate.MountPointEntry
 import com.cloudbees.jenkins.plugins.amazonecs.ECSTaskTemplate.EnvironmentEntry
+import com.cloudbees.jenkins.plugins.amazonecs.ECSTaskTemplate.LogDriverOption
 import com.cloudbees.jenkins.plugins.amazonecs.ECSCloud
 
 println '--> starting ecs config'
 instance = Jenkins.getInstance()
+println '--> creating logdriver opts'
+def logDriverOpts = Arrays.asList(
+  new LogDriverOption(
+    name="syslog-address",
+    value='tcp://172.17.0.1:5514'),
+  new LogDriverOption(
+    name="tag",
+    value='jenkins-slave'),
+)
+println '--> creating environments'
+def environments = Arrays.asList(
+  new EnvironmentEntry(
+    name="VAULT_ADDR",
+    value=System.getenv('VAULT_ADDR')),
+  new EnvironmentEntry(
+    name="VAULT_SKIP_VERIFY",
+    value=System.getenv('VAULT_SKIP_VERIFY')),
+)
 println '--> creating mounts'
 def mounts = Arrays.asList(
   new MountPointEntry(
@@ -30,15 +49,16 @@ def ecsTemplate = new ECSTaskTemplate(
   image=System.getenv('JENKINS_SLAVE_IMAGE'),
   remoteFSRoot="/var/jenkins_home",
   memory=0,
-  memoryReservation=2048,
-  cpu=768,
+  memoryReservation=1536,
+  cpu=1,
   privileged=true,
-  logDriverOptions=null,
-  environments=null,
+  logDriverOptions=logDriverOpts,
+  environments=environments,
   extraHosts=null,
   mountPoints=mounts
 )
 ecsTemplate.setTaskrole(System.getenv('JENKINS_SLAVE_IAM_ROLE_ARN'))
+ecsTemplate.setLogDriver("syslog")
 
 ecsCloud = new ECSCloud(
   name="ecs",
