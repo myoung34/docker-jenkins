@@ -13,7 +13,7 @@ Syslog syslog = new Syslog();
 syslog.setHost('172.17.0.1');
 syslog.setPort(5555);
 syslog.setSyslogProtocol(SyslogProtocol.UDP);
-syslog.setMessageFormat(MessageFormat.RFC_3164);
+syslog.setMessageFormat(MessageFormat.RFC_5424);
 
 config.setLogstashIndexer(syslog);
 config.save();

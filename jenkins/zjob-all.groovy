@@ -54,12 +54,19 @@ properties.seedjobs.each {
         Collections.<GitSCMExtension>emptyList(),
       )
       project.definition = new CpsScmFlowDefinition(scm, it.value.jenkinsfile)
+      it.value.parameters.each { key, value ->
+        helpers.addBuildParameter(project, key, value)
+      }
       break
   }
-
-  it.value.parameters.each { key, value ->
-    helpers.addBuildParameter(project, key, value)
+  view = hudson.model.Hudson.instance.getView(it.value.view)
+  if (view == null) {
+    println "--> Create ${it.value.view} view"
+    instance.addView(new ListView(it.value.view))
+    view = hudson.model.Hudson.instance.getView(it.value.view)
   }
+  view.doAddJobToView(it.value.name)
+
   project.save()
 }
 
